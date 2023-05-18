@@ -1,9 +1,12 @@
 from dagster import Definitions, load_assets_from_modules
-from lab6.crud import sqlite
-from lab6.modeling import randomforest
+from lab6.assets import dataingest
+from lab6.assets import modeltrain
+from lab6.jobs import *
 
-sqlite_assets = load_assets_from_modules([sqlite, randomforest])
+assets = load_assets_from_modules([dataingest, modeltrain])
 
 defs = Definitions(
-    assets=sqlite_assets,
+    assets=assets,
+    jobs = [generate_data_job, remove_data_job, train_static_model_job, train_recurring_model_job, compare_model_job],
+    schedules = [generate_data_job_schedule, recurring_model_train_schedule, compare_model_job_schedule]
 )

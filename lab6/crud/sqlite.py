@@ -13,74 +13,47 @@ con = sqlite3.connect(db)
 cursor = con.cursor()
 
 
-@asset(description="This checks if our table exists")
+
+import sqlite3
+from pathlib import Path
+import pandas as pd
+# Get our sql session
+db = Path('database.db')
+con = sqlite3.connect(db)
+cursor = con.cursor()
+
 def create_table():
-
-    logger.info('Create table if it does not exist within our database')
-
     create_table_text = """CREATE TABLE IF NOT EXISTS demods (
         feature1 real NOT NULL,
         feature2 real NOT NULL, 
         label integer NOT NULL
     )"""
 
-    try:
-        cursor.execute(create_table_text)
-    except:
-        logger.error('Had issues with creating the table in the database')
-        raise Exception
+    cursor.execute(create_table_text)
 
-@asset(description="Return metadata for the database")
-def display_db_meta(create_table):
-    logger.info('Getting the meta data for our database')
-    
+def get_table_meta():
     cursor.execute("SELECT * FROM demods")
     dat = cursor.fetchall()
-
-    rows = len(dat)
     cols = ['feature1', 'feature2', 'label']
-    logger.info(f'Total number of entries in the table {rows}')
-    logger.info(f'Total number of columns in the table {len(cols)}')
-    return Output(None, metadata={"num_rows": rows, "num_cols": len(cols), "columns": cols})
+    df = pd.DataFrame(dat, columns=cols)
+    nrows = df.shape[0]
+    ncols = df.shape[1]
+    return nrows, cols, cols
 
-@asset(description="This ingests an example bit of data into the database")
-def add_data(create_table):
-
-    data = []
-    for i in range(10):
-        if i < 5:
-            f1 = random.uniform(10.5, 20.5)
-            f2 = random.uniform(21, 41)
-            label = 0
-        else:
-            f1 = random.uniform(10.5, 20.5)
-            f2 = random.uniform(21, 41)
-            # f1 = random.uniform(15.5, 25.5)
-            # f2 = random.uniform(31, 51)
-            label = 1
-        data.append((f1, f2, label))
-    
-    logger.info(f'Injesting {len(data)} rows into the database')
-    
+def add_data(data):
     cursor.executemany("INSERT INTO demods VALUES(?, ?, ?)", data)
     con.commit()
     con.close()
 
-@asset(description="This allows the user to delete all the data from the database")
-def remove_data():
-    logger.info('Deleting all data from the database.')
-    cursor.execute('DELETE FROM demods')
+def remove_data(tablename):
+    cursor.execute(f'DELETE FROM {tablename}')
     con.commit()
     con.close()
 
-@asset(description="This allows the user to read the data from within the table")
-def read_data(create_table):
+def read_data():
 
-    logger.info('Pulling the data from the table.')
     cursor.execute("SELECT * FROM demods")
     dat = cursor.fetchall()
-
-    logger.info(f'Pulled {len(dat)} rows from the data table')
     df = pd.DataFrame(dat, columns=['feature1', 'feature2', 'label'])
 
     return df

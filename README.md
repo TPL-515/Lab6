@@ -28,14 +28,28 @@ From here you should be able to navigate to the UI hosted at: http://localhost:3
 
 For this lab you will be asked to perform the following tasks
 
-1) Look in the U.I. and find the "generate data" asset. This will generate 10 rows and insert them into the dsdemo table.
+1) Look within the UI and notice that the "generate_data" and "remove_data" jobs have been added.
 
-2) Next run the "train model" asset that trains the model. The output of this is a finished model that can be reused later on. 
+2) Look through the modeling/randomforest code and make sure you understand the methods that currently exist.
 
-3) Lastly run the "predict" asset that shows off the predictions and logs a scatter plot of the two features colored by the label as well as a confusion matrix for predictions.
+3) Write an asset called "train_static" that trains a model on the first 10 rows within the database
 
-4) Write a scheduled job that appends more data to the database every 1 min.
+4) Write an asset called "predict_static" that makes predictions on the whole database using the model from train_static
 
-5) Write a scheduled job that when this job runs updates the retrains the model and makes a prediction.
+5) Write an asset called "train_recurring" that trains a model on the whole database
 
-6) Notice how over time our model performance changes.
+6) Write an asset called "predict_recurring" that uses the model from train to make predictions on the data.
+
+7) Write a job called "train_static_model_job" that trains the static model
+
+8) Write a job called "train_recurring_model_job" that trains the recurring model.
+
+9) Write a job called "compare_model_job" that compares the accuracy of the two models and logs it to the meta data.
+
+10) Write a job schedule for the train_recurring_model_job that goes every 2 minutes
+
+11) Write a job schedule for the compare_model_job that goes every 2 minutes.
+
+12) After everything is configured materialize everything one by one starting with the generate_data, then the train_static and the train_recurring and ending with the compare_models
+
+13) Turn on the schedule and notice how the metrics change over time.
